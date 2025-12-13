@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Mission Helper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-slate-900 text-slate-200 font-sans h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-lg z-10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-scroll text-emerald-400 text-2xl"></i>
+            <h1 class="text-xl font-bold text-white tracking-wide">Ninja Mission <span
+                    class="text-emerald-400">Helper</span></h1>
+        </div>
+        <div class="text-xs text-slate-400">v1.0 MVP</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden">
+
+        <!-- Sidebar: Search & List -->
+        <aside class="w-full md:w-1/3 lg:w-1/4 bg-slate-800/50 border-r border-slate-700 flex flex-col">
+            <div class="p-4 border-b border-slate-700">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-400"></i>
+                    <input type="text" id="searchInput" placeholder="Find Character or Mission..."
+                        class="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-emerald-500 transition-colors text-sm shadow-inner placeholder-slate-500">
+                </div>
+            </div>
+
+            <div id="missionList" class="flex-1 overflow-y-auto p-2 space-y-2">
+                <!-- Mission Items injected here -->
+                <div class="text-center text-slate-500 mt-10 text-sm">Use search to find missions...</div>
+            </div>
+        </aside>
+
+        <!-- Main Panel: Details & Tree -->
+        <section id="detailPanel" class="flex-1 overflow-y-auto p-6 bg-slate-900 relative">
+            <div id="emptyState" class="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
+                <i class="fa-solid fa-dungeon text-6xl mb-4"></i>
+                <p class="text-lg">Select a mission to analyze requirements</p>
+            </div>
+
+            <div id="contentState" class="hidden max-w-4xl mx-auto space-y-6">
+
+                <!-- Mission Header Card -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none">
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <img id="missionImg" src="" alt="Mission"
+                            class="w-24 h-24 rounded-lg object-cover border-2 border-slate-600 shadow-md bg-slate-700">
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <h2 id="missionName" class="text-2xl font-bold text-white"></h2>
+                                <span id="missionLevel"
+                                    class="px-3 py-1 bg-blue-900/50 text-blue-300 text-xs font-bold rounded-full border border-blue-700">LVL
+                                    0</span>
+                            </div>
+                            <div class="text-sm text-slate-400 mb-4" id="missionAnime"></div>
+
+                            <!-- Unlocks -->
+                            <div class="flex items-center gap-3">
+                                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unlocks:
+                                </div>
+                                <div id="unlocksContainer" class="flex gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Section -->
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-emerald-400"></i> Mission Goals
+                        </h3>
+                        <div id="goalsList" class="space-y-3"></div>
+                    </div>
+                </div>
+
+                <!-- Prerequisite Tree -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                    <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-code-branch text-amber-400"></i> Prerequisite Path
+                    </h3>
+                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50 tree-container">
+                        <div id="reqTree" class="space-y-0"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script src="characters.js"></script>
+    <script src="missions.js"></script>
+    <script>
+        // --- STATE MANAGEMENT ---
+        const missionMap = new Map();
+        const charMap = new Map();
+        const charUnlockMap = new Map();
+
+        // Initialize Data
+        if (typeof characterData !== 'undefined') {
+            characterData.forEach(c => charMap.set(c.name, c.url));
+        }
+        rawData.forEach(m => {
+            missionMap.set(m.name, m);
+            if (m.unlockedCharacter) {
+                charUnlockMap.set(m.unlockedCharacter, m.name);
+            }
+        });
+
+        // --- DOM ELEMENTS ---
+        const searchInput = document.getElementById('searchInput');
+        const missionList = document.getElementById('missionList');
+        const detailPanel = document.getElementById('detailPanel');
+        const emptyState = document.getElementById('emptyState');
+        const contentState = document.getElementById('contentState');
+
+        // --- LOGIC: RENDER LIST ---
+        function renderList(filter = '') {
+            missionList.innerHTML = '';
+
+            const lowerFilter = filter.toLowerCase();
+            const filtered = rawData.filter(m => {
+                return m.name.toLowerCase().includes(lowerFilter) ||
+                    (m.unlockedCharacter && m.unlockedCharacter.toLowerCase().includes(lowerFilter));
+            });
+
+            if (filtered.length === 0) {
+                missionList.innerHTML = '<div class="text-center text-slate-500 mt-4 text-sm">No missions found.</div>';
+                return;
+            }
+
+            filtered.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 hover:border-emerald-500 cursor-pointer transition-all hover:bg-slate-750 group';
+                item.onclick = () => selectMission(m.name);
+
+                let charBadge = '';
+                if (m.unlockedCharacter) {
+                    charBadge = `<div class="text-xs text-emerald-400 font-semibold mt-1"><i class="fa-solid fa-unlock-keyhole mr-1"></i> ${m.unlockedCharacter}</div>`;
+                }
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${m.url}" class="w-10 h-10 rounded object-cover bg-slate-700" onerror="this.src='https://via.placeholder.com/40'">
+                        <div>
+                            <div class="text-sm font-bold text-slate-200 group-hover:text-white">${m.name}</div>
+                            ${charBadge}
+                        </div>
+                    </div>
+                `;
+                missionList.appendChild(item);
+            });
+        }
+
+        // --- LOGIC: DETAILS VIEW ---
+        function selectMission(name) {
+            const m = missionMap.get(name);
+            if (!m) return;
+
+            // Toggle Panels
+            emptyState.classList.add('hidden');
+            contentState.classList.remove('hidden');
+
+            // Header Data
+            document.getElementById('missionName').innerText = m.name;
+            document.getElementById('missionImg').src = m.url;
+            document.getElementById('missionLevel').innerText = `Level ${m.levelRequirement}`;
+            document.getElementById('missionAnime').innerText = m.anime;
+
+
+            // Unlocks
+            const unlocksContainer = document.getElementById('unlocksContainer');
+            unlocksContainer.innerHTML = '';
+            if (m.unlockedCharacter) {
+                const charUrl = charMap.get(m.unlockedCharacter);
+                let imgHtml = '';
+                if (charUrl) {
+                    imgHtml = `<img src="${charUrl}" class="w-5 h-5 rounded-full border border-emerald-500/50 mr-2 object-cover">`;
+                }
+                unlocksContainer.innerHTML += `<span class="bg-emerald-900/50 text-emerald-400 px-3 py-1 rounded-md text-sm border border-emerald-700/50 flex items-center">${imgHtml}${m.unlockedCharacter}</span>`;
+            } else if (m.unlockedBorder) {
+                unlocksContainer.innerHTML += `<span class="bg-purple-900/50 text-purple-400 px-3 py-1 rounded-md text-sm border border-purple-700/50">Border: ${m.unlockedBorder}</span>`;
+            } else {
+                unlocksContainer.innerHTML += `<span class="text-slate-500 text-sm italic">Next Mission Progression</span>`;
+            }
+
+            // Goals Logic & Strategy
+            const goalsList = document.getElementById('goalsList');
+            goalsList.innerHTML = '';
+
+            m.missionGoals.forEach(g => {
+                const el = document.createElement('div');
+                el.className = 'bg-slate-900 p-3 rounded border border-slate-700 text-sm flex items-start gap-3';
+
+                let icon = 'fa-trophy';
+                let color = 'text-yellow-500';
+
+                if (g.type === 'useSkill') {
+                    icon = 'fa-bolt';
+                    color = 'text-blue-400';
+                }
+
+                // Text generation
+                let desc = g.text;
+                if (!desc) {
+                    if (g.type === 'win') {
+                        let subjects = g.with;
+                        if (Array.isArray(g.with)) {
+                            if (g.sameTeam) {
+                                subjects = g.with.join(' and ');
+                            } else {
+                                subjects = g.with.join(' or ');
+                            }
+                        }
+
+                        desc = `Win ${g.value} battles with ${subjects}`;
+                        if (g.sameTeam) {
+                            desc += " on the same team";
+                        }
+                    }
+                }
+
+                // Logic for Streaks
+                if (g.isrow) {
+                    // Highlight or append "in a row"
+                    if (desc.toLowerCase().includes('in a row')) {
+                        desc = desc.replace(/in a row/yi, '<span class="text-red-400 font-bold">in a row</span>');
+                    } else {
+                        desc += ' <span class="text-red-400 font-bold">in a row</span>';
+                    }
+                }
+
+                // Avatar Logic
+                let avatarHtml = '';
+                if (g.with) {
+                    const names = Array.isArray(g.with) ? g.with : [g.with];
+                    const avatars = names.map(name => {
+                        const url = charMap.get(name);
+                        if (url) {
+                            return `<img src="${url}" title="${name}" class="w-6 h-6 rounded-full border border-slate-600 bg-slate-800 object-cover">`;
+                        }
+                        return '';
+                    }).join('');
+
+                    if (avatars) {
+                        avatarHtml = `<span class="inline-flex gap-1 mr-2 align-middle">${avatars}</span>`;
+                    }
+                }
+
+                el.innerHTML = `
+                    <div class="mt-0.5 ${color}"><i class="fa-solid ${icon}"></i></div>
+                    <div class="text-slate-200">
+                        ${avatarHtml}${desc}
+                    </div>
+                `;
+                goalsList.appendChild(el);
+            });
+
+            // Tree Construction
+            const treeContainer = document.getElementById('reqTree');
+            treeContainer.innerHTML = '';
+            buildTree(m.name, treeContainer);
+        }
+
+        // --- LOGIC: RECURSIVE TREE ---
+        function buildTree(missionName, container) {
+            // Clear container first if it's the root call
+            if (container.id === 'reqTree') {
+                container.innerHTML = '';
+                container.className = 'tree-root'; // Add root class for CSS
+            }
+
+            const m = missionMap.get(missionName);
+            if (!m) return;
+
+            createTreeNode(m, container, new Set(), true);
+        }
+
+        function getImplicitRequirements(mission) {
+            const implicitReqs = new Map(); // MissionName -> CharacterName
+            if (!mission.missionGoals) return implicitReqs;
+
+            mission.missionGoals.forEach(goal => {
+                if (goal.with) {
+                    const characters = Array.isArray(goal.with) ? goal.with : [goal.with];
+                    characters.forEach(charName => {
+                        const unlockMissionName = charUnlockMap.get(charName);
+                        // Avoid self-reference if the mission requires the character it unlocks (unlikely but possible)
+                        if (unlockMissionName && unlockMissionName !== mission.name) {
+                            if (!implicitReqs.has(unlockMissionName)) {
+                                implicitReqs.set(unlockMissionName, charName);
+                            }
+                        }
+                    });
+                }
+            });
+            return implicitReqs;
+        }
+
+        function createTreeNode(mission, parentElement, visited = new Set(), isExpanded = false, reason = null) {
+            // Cycle detection
+            if (visited.has(mission.name)) {
+                const errorNode = document.createElement('div');
+                errorNode.className = 'text-red-500 text-xs p-2';
+                errorNode.innerText = `Cycle detected: ${mission.name}`;
+                parentElement.appendChild(errorNode);
+                return;
+            }
+
+            const newVisited = new Set(visited);
+            newVisited.add(mission.name);
+
+            const explicitReqs = mission.completedRequeriments || [];
+            const implicitReqsMap = getImplicitRequirements(mission);
+
+            // Combine and deduplicate
+            const allReqs = new Set(explicitReqs);
+            for (const req of implicitReqsMap.keys()) {
+                allReqs.add(req);
+            }
+            const hasChildren = allReqs.size > 0;
+
+            // 1. Create Item Container
+            const item = document.createElement('div');
+            item.className = 'tree-item';
+
+            // 2. Create Content Row
+            const content = document.createElement('div');
+            content.className = 'tree-content';
+
+            // Toggle Button
+            const toggle = document.createElement('div');
+            toggle.className = `tree-toggle ${hasChildren ? '' : 'invisible'} ${isExpanded ? '' : 'collapsed'}`;
+            toggle.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+
+            // Mission Card
+            const card = document.createElement('div');
+            card.className = 'mission-node';
+            card.onclick = (e) => {
+                // Prevent toggling when clicking the card itself
+                e.stopPropagation();
+                selectMission(mission.name);
+            };
+
+            // Highlight if it's the currently viewed mission (optional logic, can be added later)
+            if (document.getElementById('missionName').innerText === mission.name) {
+                card.classList.add('active');
+            }
+
+            let metaContent = `<span class="text-emerald-500 font-bold">Lvl ${mission.levelRequirement}</span>`;
+            let extraContent = '';
+
+            if (reason) {
+                // Implicit requirement: Highlight the unlock as the reason
+                extraContent = `<div class="text-xs text-amber-400 mt-1 font-semibold"><i class="fa-solid fa-key mr-1"></i>Unlocks required character: ${reason}</div>`;
+            } else {
+                // Standard requirement
+                if (mission.unlockedCharacter) {
+                    metaContent += `<span> • Unlock: ${mission.unlockedCharacter}</span>`;
+                }
+            }
+
+            card.innerHTML = `
+                <img src="${mission.url}" onerror="this.src='https://via.placeholder.com/32'">
+                <div class="mission-node-info">
+                    <div class="mission-node-title">${mission.name}</div>
+                    <div class="mission-node-meta">
+                        ${metaContent}
+                    </div>
+                    ${extraContent}
+                </div>
+            `;
+
+            content.appendChild(toggle);
+            content.appendChild(card);
+            item.appendChild(content);
+
+            // 3. Create Children Container
+            if (hasChildren) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = `tree-children ${isExpanded ? '' : 'hidden'}`;
+
+                let childrenLoaded = false;
+
+                const loadChildren = () => {
+                    if (!childrenLoaded) {
+                        allReqs.forEach(reqName => {
+                            const reqMission = missionMap.get(reqName);
+                            if (reqMission) {
+                                // Determine reason
+                                let childReason = null;
+                                // If it is NOT in explicit reqs, but IS in implicit reqs, pass the reason
+                                if (!explicitReqs.includes(reqName) && implicitReqsMap.has(reqName)) {
+                                    childReason = implicitReqsMap.get(reqName);
+                                }
+
+                                createTreeNode(reqMission, childrenContainer, newVisited, false, childReason);
+                            }
+                        });
+                        childrenLoaded = true;
+                    }
+                };
+
+                if (isExpanded) {
+                    loadChildren();
+                }
+
+                // Toggle Logic
+                toggle.onclick = (e) => {
+                    e.stopPropagation();
+                    loadChildren();
+                    childrenContainer.classList.toggle('hidden');
+                    toggle.classList.toggle('collapsed');
+                };
+
+                item.appendChild(childrenContainer);
+            }
+
+            parentElement.appendChild(item);
+        }
+
+        // --- INIT ---
+        searchInput.addEventListener('input', (e) => renderList(e.target.value));
+        renderList();
+
+    </script>
+</body>
+
+</html>
