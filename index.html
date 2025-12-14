@@ -177,6 +177,21 @@
         const expandAllBtn = document.getElementById('expandAllBtn');
         const collapseAllBtn = document.getElementById('collapseAllBtn');
 
+        // --- VIEWPORT HEIGHT FIX ---
+        const setAppHeight = () => {
+            const viewport = window.visualViewport;
+            const height = viewport ? viewport.height : window.innerHeight;
+            document.documentElement.style.setProperty('--app-height', `${height}px`);
+        };
+
+        setAppHeight();
+        window.addEventListener('resize', setAppHeight);
+        window.addEventListener('orientationchange', () => setTimeout(setAppHeight, 150));
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', setAppHeight);
+            window.visualViewport.addEventListener('scroll', setAppHeight);
+        }
+
         // --- LOGIC: RENDER LIST ---
         function renderList(filter = '', category = '') {
             const lowerFilter = filter.toLowerCase().trim();
