@@ -14,25 +14,29 @@
 <body class="bg-slate-900 text-slate-200 font-sans h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-lg z-10 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-scroll text-emerald-400 text-2xl"></i>
-            <h1 class="text-xl font-bold text-white tracking-wide">Ninja Mission <span
-                    class="text-emerald-400">Helper</span></h1>
+    <header class="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 p-3 md:p-4 shadow-lg z-10 flex items-center justify-between">
+        <div class="flex items-center gap-2 md:gap-3">
+            <i class="fa-solid fa-scroll text-emerald-400 text-xl md:text-2xl drop-shadow-lg"></i>
+            <h1 class="text-base md:text-xl font-bold text-white tracking-wide">Ninja Mission <span
+                    class="text-emerald-400 drop-shadow-lg">Helper</span></h1>
         </div>
-        <div class="text-xs text-slate-400">v1.0 MVP</div>
+        <!-- Mobile: Back button when detail is shown -->
+        <button id="mobileBackBtn" class="md:hidden hidden bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Back
+        </button>
     </header>
 
     <!-- Main Content -->
     <main class="flex-1 flex overflow-hidden">
 
         <!-- Sidebar: Search & List -->
-        <aside class="w-full md:w-1/3 lg:w-1/4 bg-slate-800/50 border-r border-slate-700 flex flex-col">
-            <div class="p-4 border-b border-slate-700">
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-400"></i>
+        <aside id="missionListPanel" class="w-full md:w-1/3 lg:w-1/4 bg-slate-800/50 border-r border-slate-700 flex flex-col">
+            <div class="p-3 md:p-4 border-b border-slate-700">
+                <div class="relative group">
+                    <i class="fa-solid fa-search absolute left-3 top-3 md:top-3.5 text-slate-400 transition-colors group-focus-within:text-emerald-400"></i>
                     <input type="text" id="searchInput" placeholder="Find Character or Mission..."
-                        class="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-emerald-500 transition-colors text-sm shadow-inner placeholder-slate-500">
+                        class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2.5 md:py-3 pl-10 pr-4 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm shadow-inner placeholder-slate-500">
+                    <div class="absolute right-3 top-3 md:top-3.5 text-[10px] text-slate-600 hidden md:block">Ctrl+K</div>
                 </div>
             </div>
 
@@ -43,64 +47,85 @@
         </aside>
 
         <!-- Main Panel: Details & Tree -->
-        <section id="detailPanel" class="flex-1 overflow-y-auto p-6 bg-slate-900 relative">
+        <section id="detailPanel" class="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 relative hidden md:block">
             <div id="emptyState" class="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
                 <i class="fa-solid fa-dungeon text-6xl mb-4"></i>
                 <p class="text-lg">Select a mission to analyze requirements</p>
             </div>
 
-            <div id="contentState" class="hidden max-w-4xl mx-auto space-y-6">
+            <div id="contentState" class="hidden max-w-4xl mx-auto space-y-4 md:space-y-6">
 
                 <!-- Mission Header Card -->
-                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl relative overflow-hidden">
+                <div class="bg-slate-800 rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700 shadow-xl relative overflow-hidden hover:shadow-2xl transition-shadow duration-300">
                     <div
                         class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none">
                     </div>
 
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <img id="missionImg" src="" alt="Mission"
-                            class="w-24 h-24 rounded-lg object-cover border-2 border-slate-600 shadow-md bg-slate-700">
+                    <div class="flex flex-col md:flex-row gap-4 md:gap-6">
+                        <div class="relative group">
+                            <img id="missionImg" src="" alt="Mission"
+                                class="w-20 h-20 md:w-24 md:h-24 rounded-lg object-cover border-2 border-slate-600 shadow-md bg-slate-700 transition-transform group-hover:scale-105">
+                            <div class="absolute inset-0 rounded-lg bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
                         <div class="flex-1">
-                            <div class="flex items-start justify-between mb-2">
-                                <h2 id="missionName" class="text-2xl font-bold text-white"></h2>
+                            <div class="flex items-start justify-between mb-2 gap-2">
+                                <h2 id="missionName" class="text-lg md:text-2xl font-bold text-white leading-tight flex-1"></h2>
                                 <span id="missionLevel"
-                                    class="px-3 py-1 bg-blue-900/50 text-blue-300 text-xs font-bold rounded-full border border-blue-700">LVL
+                                    class="px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-blue-900/70 to-blue-800/70 text-blue-200 text-xs font-bold rounded-lg border border-blue-700/50 whitespace-nowrap shadow-lg">LVL
                                     0</span>
                             </div>
-                            <div class="text-sm text-slate-400 mb-4" id="missionAnime"></div>
+                            <div class="text-xs md:text-sm text-slate-400 mb-3 md:mb-4 flex items-center gap-2" id="missionAnime">
+                                <i class="fa-solid fa-tv text-emerald-400"></i>
+                                <span></span>
+                            </div>
 
                             <!-- Unlocks -->
-                            <div class="flex items-center gap-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                 <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unlocks:
                                 </div>
-                                <div id="unlocksContainer" class="flex gap-2"></div>
+                                <div id="unlocksContainer" class="flex flex-wrap gap-2"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Goals Section -->
-                <div class="grid grid-cols-1 gap-6">
-                    <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
-                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <div class="grid grid-cols-1 gap-4 md:gap-6">
+                    <div class="bg-slate-800 rounded-lg md:rounded-xl p-4 md:p-5 border border-slate-700">
+                        <h3 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-bullseye text-emerald-400"></i> Mission Goals
                         </h3>
-                        <div id="goalsList" class="space-y-3"></div>
+                        <div id="goalsList" class="space-y-2 md:space-y-3"></div>
                     </div>
                 </div>
 
                 <!-- Prerequisite Tree -->
-                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-                    <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-code-branch text-amber-400"></i> Prerequisite Path
-                    </h3>
-                    <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50 tree-container">
+                <div class="bg-slate-800 rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700">
+                    <div class="flex items-center justify-between mb-4 md:mb-6">
+                        <h3 class="text-base md:text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-code-branch text-amber-400"></i> Prerequisite Path
+                        </h3>
+                        <div class="flex gap-2">
+                            <button id="expandAllBtn" class="bg-slate-700 hover:bg-emerald-600 px-2.5 md:px-3 py-1.5 rounded text-xs font-semibold transition-all duration-200 hover:scale-105">
+                                <i class="fa-solid fa-chevron-down mr-1"></i>Expand All
+                            </button>
+                            <button id="collapseAllBtn" class="bg-slate-700 hover:bg-slate-600 px-2.5 md:px-3 py-1.5 rounded text-xs font-semibold transition-all duration-200 hover:scale-105">
+                                <i class="fa-solid fa-chevron-up mr-1"></i>Collapse
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-lg p-2 md:p-4 border border-slate-700/50 tree-container">
                         <div id="reqTree" class="space-y-0"></div>
                     </div>
                 </div>
 
             </div>
         </section>
+        
+        <!-- Back to Top Button -->
+        <button id="backToTop" class="fixed bottom-6 right-6 gradient-accent text-white w-12 h-12 rounded-full shadow-lg hover:shadow-xl hidden items-center justify-center transition-all duration-300 hover:scale-110 z-20">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
     </main>
 
     <script src="characters.js"></script>
@@ -128,27 +153,45 @@
         const detailPanel = document.getElementById('detailPanel');
         const emptyState = document.getElementById('emptyState');
         const contentState = document.getElementById('contentState');
+        const backToTopBtn = document.getElementById('backToTop');
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
 
         // --- LOGIC: RENDER LIST ---
         function renderList(filter = '') {
-            missionList.innerHTML = '';
-
-            const lowerFilter = filter.toLowerCase();
-            const filtered = rawData.filter(m => {
-                return m.name.toLowerCase().includes(lowerFilter) ||
-                    (m.unlockedCharacter && m.unlockedCharacter.toLowerCase().includes(lowerFilter));
-            });
-
-            if (filtered.length === 0) {
-                missionList.innerHTML = '<div class="text-center text-slate-500 mt-4 text-sm">No missions found.</div>';
-                return;
+            const lowerFilter = filter.toLowerCase().trim();
+            
+            // Show loading state for better UX
+            if (lowerFilter !== '') {
+                missionList.innerHTML = '<div class="flex items-center justify-center py-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Searching...</div>';
             }
+            
+            // Use setTimeout to allow UI to update
+            setTimeout(() => {
+                missionList.innerHTML = '';
 
-            filtered.forEach(m => {
+                const filtered = rawData.filter(m => {
+                    if (lowerFilter === '') return true;
+                    return m.name.toLowerCase().includes(lowerFilter) ||
+                        (m.unlockedCharacter && m.unlockedCharacter.toLowerCase().includes(lowerFilter));
+                });
+
+                if (filtered.length === 0) {
+                    missionList.innerHTML = '<div class="text-center text-slate-500 mt-4 text-sm"><i class="fa-solid fa-search mb-2 text-2xl block"></i>No missions found.</div>';
+                    return;
+                }
+                
+                // Add result count for searches
+                if (lowerFilter !== '') {
+                    const countBadge = document.createElement('div');
+                    countBadge.className = 'px-3 py-2 text-xs text-slate-400 border-b border-slate-700 flex items-center justify-between';
+                    countBadge.innerHTML = `<span><i class="fa-solid fa-filter mr-1.5"></i>Filtered Results</span><span class="bg-emerald-900/30 text-emerald-400 px-2 py-0.5 rounded-full font-semibold">${filtered.length}</span>`;
+                    missionList.appendChild(countBadge);
+                }            filtered.forEach(m => {
                 const item = document.createElement('div');
-                item.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 hover:border-emerald-500 cursor-pointer transition-all hover:bg-slate-750 group';
+                item.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 hover:border-emerald-500 cursor-pointer transition-all duration-200 hover:scale-[1.02] group';
                 item.onclick = () => selectMission(m.name);
-
+                
                 let charBadge = '';
                 if (m.unlockedCharacter) {
                     charBadge = `<div class="text-xs text-emerald-400 font-semibold mt-1"><i class="fa-solid fa-unlock-keyhole mr-1"></i> ${m.unlockedCharacter}</div>`;
@@ -156,16 +199,97 @@
 
                 item.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <img src="${m.url}" class="w-10 h-10 rounded object-cover bg-slate-700" onerror="this.src='https://via.placeholder.com/40'">
+                        <img src="${m.url}" class="w-10 h-10 rounded object-cover bg-slate-700 transition-transform group-hover:scale-110" onerror="this.src='https://via.placeholder.com/40'">
                         <div>
-                            <div class="text-sm font-bold text-slate-200 group-hover:text-white">${m.name}</div>
+                            <div class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">${m.name}</div>
                             ${charBadge}
                         </div>
                     </div>
                 `;
+                
                 missionList.appendChild(item);
             });
+            }, lowerFilter !== '' ? 100 : 0);
         }
+
+        // --- TREE CONTROLS ---
+        function expandAllTree() {
+            // First, trigger loading of all lazy-loaded children
+            const allToggles = document.querySelectorAll('.tree-toggle:not(.invisible)');
+            allToggles.forEach(toggle => {
+                const onclick = toggle.onclick;
+                if (onclick && toggle.classList.contains('collapsed')) {
+                    // Trigger the onclick to load children
+                    const fakeEvent = { stopPropagation: () => {} };
+                    onclick.call(toggle, fakeEvent);
+                }
+            });
+            
+            // Then expand all
+            setTimeout(() => {
+                document.querySelectorAll('.tree-children').forEach(el => {
+                    el.classList.remove('hidden');
+                });
+                document.querySelectorAll('.tree-toggle').forEach(el => {
+                    el.classList.remove('collapsed');
+                });
+            }, 50);
+        }
+
+        function collapseAllTree() {
+            const treeRoot = document.getElementById('reqTree');
+            // Keep only the first level expanded
+            treeRoot.querySelectorAll('.tree-children').forEach(el => {
+                el.classList.add('hidden');
+            });
+            treeRoot.querySelectorAll('.tree-toggle').forEach(el => {
+                el.classList.add('collapsed');
+            });
+        }
+
+        // --- BACK TO TOP ---
+        detailPanel.addEventListener('scroll', () => {
+            if (detailPanel.scrollTop > 300) {
+                backToTopBtn.classList.remove('hidden');
+                backToTopBtn.classList.add('flex');
+            } else {
+                backToTopBtn.classList.add('hidden');
+                backToTopBtn.classList.remove('flex');
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            detailPanel.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // --- MOBILE NAVIGATION ---
+        let isMobile = window.innerWidth < 768;
+        window.addEventListener('resize', () => {
+            isMobile = window.innerWidth < 768;
+        });
+
+        const mobileBackBtn = document.getElementById('mobileBackBtn');
+        const missionListPanel = document.getElementById('missionListPanel');
+
+        function showMissionList() {
+            if (isMobile) {
+                missionListPanel.classList.remove('hidden');
+                detailPanel.classList.add('hidden');
+                mobileBackBtn.classList.add('hidden');
+                missionListPanel.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function showMissionDetail() {
+            if (isMobile) {
+                missionListPanel.classList.add('hidden');
+                detailPanel.classList.remove('hidden');
+                mobileBackBtn.classList.remove('hidden');
+                detailPanel.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        mobileBackBtn.addEventListener('click', showMissionList);
 
         // --- LOGIC: DETAILS VIEW ---
         function selectMission(name) {
@@ -176,11 +300,19 @@
             emptyState.classList.add('hidden');
             contentState.classList.remove('hidden');
 
+            // Show detail panel on mobile
+            showMissionDetail();
+            
+            // Scroll to top smoothly
+            if (!isMobile) {
+                detailPanel.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
             // Header Data
             document.getElementById('missionName').innerText = m.name;
             document.getElementById('missionImg').src = m.url;
             document.getElementById('missionLevel').innerText = `Level ${m.levelRequirement}`;
-            document.getElementById('missionAnime').innerText = m.anime;
+            document.getElementById('missionAnime').querySelector('span').innerText = m.anime;
 
 
             // Unlocks
@@ -190,13 +322,13 @@
                 const charUrl = charMap.get(m.unlockedCharacter);
                 let imgHtml = '';
                 if (charUrl) {
-                    imgHtml = `<img src="${charUrl}" class="w-5 h-5 rounded-full border border-emerald-500/50 mr-2 object-cover">`;
+                    imgHtml = `<img src="${charUrl}" class="w-5 h-5 rounded-full border border-emerald-500/50 mr-2 object-cover shadow-sm">`;  
                 }
-                unlocksContainer.innerHTML += `<span class="bg-emerald-900/50 text-emerald-400 px-3 py-1 rounded-md text-sm border border-emerald-700/50 flex items-center">${imgHtml}${m.unlockedCharacter}</span>`;
+                unlocksContainer.innerHTML += `<span class="bg-gradient-to-r from-emerald-900/50 to-emerald-800/50 text-emerald-300 px-3 py-1.5 rounded-lg text-sm border border-emerald-700/50 flex items-center shadow-lg hover:shadow-emerald-500/20 transition-shadow">${imgHtml}${m.unlockedCharacter}</span>`;
             } else if (m.unlockedBorder) {
-                unlocksContainer.innerHTML += `<span class="bg-purple-900/50 text-purple-400 px-3 py-1 rounded-md text-sm border border-purple-700/50">Border: ${m.unlockedBorder}</span>`;
+                unlocksContainer.innerHTML += `<span class="bg-gradient-to-r from-purple-900/50 to-purple-800/50 text-purple-300 px-3 py-1.5 rounded-lg text-sm border border-purple-700/50 shadow-lg"><i class="fa-solid fa-border-all mr-2"></i>Border: ${m.unlockedBorder}</span>`;
             } else {
-                unlocksContainer.innerHTML += `<span class="text-slate-500 text-sm italic">Next Mission Progression</span>`;
+                unlocksContainer.innerHTML += `<span class="text-slate-500 text-sm italic flex items-center"><i class="fa-solid fa-arrow-right mr-2 text-slate-600"></i>Next Mission Progression</span>`;
             }
 
             // Goals Logic & Strategy
@@ -205,7 +337,7 @@
 
             m.missionGoals.forEach(g => {
                 const el = document.createElement('div');
-                el.className = 'bg-slate-900 p-3 rounded border border-slate-700 text-sm flex items-start gap-3';
+                el.className = 'bg-slate-900 p-2.5 md:p-3 rounded border border-slate-700 text-xs md:text-sm flex items-start gap-2 md:gap-3 hover:border-slate-600 transition-all duration-200 hover:shadow-md';
 
                 let icon = 'fa-trophy';
                 let color = 'text-yellow-500';
@@ -424,8 +556,16 @@
                 toggle.onclick = (e) => {
                     e.stopPropagation();
                     loadChildren();
+                    const wasHidden = childrenContainer.classList.contains('hidden');
                     childrenContainer.classList.toggle('hidden');
                     toggle.classList.toggle('collapsed');
+                    
+                    // Scroll into view on mobile when expanding
+                    if (wasHidden && window.innerWidth < 768) {
+                        setTimeout(() => {
+                            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 100);
+                    }
                 };
 
                 item.appendChild(childrenContainer);
@@ -434,8 +574,28 @@
             parentElement.appendChild(item);
         }
 
+        // --- EVENT LISTENERS ---
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderList(e.target.value);
+            }, 200);
+        });
+        
+        // Keyboard shortcut: Ctrl+K to focus search
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+        
+        expandAllBtn.addEventListener('click', expandAllTree);
+        collapseAllBtn.addEventListener('click', collapseAllTree);
+        
         // --- INIT ---
-        searchInput.addEventListener('input', (e) => renderList(e.target.value));
         renderList();
 
     </script>
