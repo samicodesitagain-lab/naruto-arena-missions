@@ -31,6 +31,15 @@ main {
   overflow-x: hidden;
 }
 
+#missionList,
+#detailPanel {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+#missionList {
+  min-height: 0;
+}
+
 /* Glassmorphism effect */
 .glass-effect {
   background: rgba(30, 41, 59, 0.7);
