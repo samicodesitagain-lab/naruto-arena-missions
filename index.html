@@ -30,10 +30,10 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex overflow-hidden">
+    <main class="flex-1 flex overflow-hidden" style="min-height: 0;">
 
         <!-- Sidebar: Search & List -->
-        <aside id="missionListPanel" class="w-full md:w-1/3 lg:w-1/4 bg-slate-800/50 border-r border-slate-700 flex flex-col">
+        <aside id="missionListPanel" class="w-full md:w-1/3 lg:w-1/4 bg-slate-800/50 border-r border-slate-700 flex flex-col" style="min-height: 0;">
             <div class="p-3 md:p-4 border-b border-slate-700">
                 <div class="relative group">
                     <i class="fa-solid fa-search absolute left-3 top-3 md:top-3.5 text-slate-400 transition-colors group-focus-within:text-emerald-400"></i>
@@ -50,7 +50,7 @@
         </aside>
 
         <!-- Main Panel: Details & Tree -->
-        <section id="detailPanel" class="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 relative" style="display: none;">
+        <section id="detailPanel" class="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 relative" style="display: none; min-height: 0;">
             <div id="emptyState" class="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
                 <i class="fa-solid fa-dungeon text-6xl mb-4"></i>
                 <p class="text-lg">Select a mission to analyze requirements</p>
