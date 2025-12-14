@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Ninja Mission Helper</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,7 +14,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="bg-slate-900 text-slate-200 font-sans h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-900 text-slate-200 font-sans flex flex-col overflow-hidden" style="height: 100dvh; height: 100vh;">
 
     <!-- Header -->
     <header class="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 p-3 md:p-4 shadow-lg z-10 flex items-center justify-between">
@@ -47,7 +50,7 @@
         </aside>
 
         <!-- Main Panel: Details & Tree -->
-        <section id="detailPanel" class="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 relative hidden md:block">
+        <section id="detailPanel" class="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 relative" style="display: none;">
             <div id="emptyState" class="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
                 <i class="fa-solid fa-dungeon text-6xl mb-4"></i>
                 <p class="text-lg">Select a mission to analyze requirements</p>
@@ -273,8 +276,8 @@
 
         function showMissionList() {
             if (isMobile) {
-                missionListPanel.classList.remove('hidden');
-                detailPanel.classList.add('hidden');
+                missionListPanel.style.display = 'flex';
+                detailPanel.style.display = 'none';
                 mobileBackBtn.classList.add('hidden');
                 missionListPanel.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -282,10 +285,12 @@
 
         function showMissionDetail() {
             if (isMobile) {
-                missionListPanel.classList.add('hidden');
-                detailPanel.classList.remove('hidden');
+                missionListPanel.style.display = 'none';
+                detailPanel.style.display = 'block';
                 mobileBackBtn.classList.remove('hidden');
                 detailPanel.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                detailPanel.style.display = 'block';
             }
         }
 
@@ -596,6 +601,15 @@
         collapseAllBtn.addEventListener('click', collapseAllTree);
         
         // --- INIT ---
+        // Set initial panel visibility for mobile
+        if (window.innerWidth < 768) {
+            missionListPanel.style.display = 'flex';
+            detailPanel.style.display = 'none';
+        } else {
+            missionListPanel.style.display = 'flex';
+            detailPanel.style.display = 'block';
+        }
+        
         renderList();
 
     </script>
