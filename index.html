@@ -41,6 +41,23 @@
                         class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2.5 md:py-3 pl-10 pr-20 md:pr-16 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-inner placeholder-slate-500" style="font-size: 16px;">
                     <div class="absolute right-3 top-3 md:top-3.5 text-[10px] text-slate-600 hidden md:block border border-slate-700 px-1.5 rounded">Ctrl+K</div>
                 </div>
+                
+                <!-- Category Filter -->
+                <div class="relative mt-3">
+                    <i class="fa-solid fa-filter absolute left-3 top-3 md:top-3.5 text-slate-400 pointer-events-none"></i>
+                    <select id="categoryFilter" 
+                        class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2.5 md:py-3 pl-10 pr-3 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-inner text-slate-300 cursor-pointer" style="font-size: 16px;">
+                        <option value="">All Categories</option>
+                        <option value="D and C Rank Missions">D & C Rank</option>
+                        <option value="B Rank Missions">B Rank</option>
+                        <option value="A Rank Missions">A Rank</option>
+                        <option value="S Rank Missions">S Rank</option>
+                        <option value="Shippuuden Missions">Shippuuden</option>
+                        <option value="Five Kage Summit Missions">Five Kage Summit</option>
+                        <option value="Tales Missions">Tales</option>
+                        <option value="Fourth Shinobi World War Pt. 1 Missions">World War Pt. 1</option>
+                    </select>
+                </div>
             </div>
 
             <div id="missionList" class="flex-1 overflow-y-auto p-2 space-y-2">
@@ -161,36 +178,36 @@
         const collapseAllBtn = document.getElementById('collapseAllBtn');
 
         // --- LOGIC: RENDER LIST ---
-        function renderList(filter = '') {
+        function renderList(filter = '', category = '') {
             const lowerFilter = filter.toLowerCase().trim();
             
-            // Show loading state for better UX
-            if (lowerFilter !== '') {
-                missionList.innerHTML = '<div class="flex items-center justify-center py-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Searching...</div>';
+            // Clear list immediately to prevent flash
+            missionList.innerHTML = '';
+
+            const filtered = rawData.filter(m => {
+                // Filter by category
+                if (category !== '' && m.anime !== category) return false;
+                
+                // Filter by search text
+                if (lowerFilter === '') return true;
+                return m.name.toLowerCase().includes(lowerFilter) ||
+                    (m.unlockedCharacter && m.unlockedCharacter.toLowerCase().includes(lowerFilter));
+            });
+
+            if (filtered.length === 0) {
+                missionList.innerHTML = '<div class="text-center text-slate-500 mt-4 text-sm"><i class="fa-solid fa-search mb-2 text-2xl block"></i>No missions found.</div>';
+                return;
             }
             
-            // Use setTimeout to allow UI to update
-            setTimeout(() => {
-                missionList.innerHTML = '';
-
-                const filtered = rawData.filter(m => {
-                    if (lowerFilter === '') return true;
-                    return m.name.toLowerCase().includes(lowerFilter) ||
-                        (m.unlockedCharacter && m.unlockedCharacter.toLowerCase().includes(lowerFilter));
-                });
-
-                if (filtered.length === 0) {
-                    missionList.innerHTML = '<div class="text-center text-slate-500 mt-4 text-sm"><i class="fa-solid fa-search mb-2 text-2xl block"></i>No missions found.</div>';
-                    return;
-                }
-                
-                // Add result count for searches
-                if (lowerFilter !== '') {
-                    const countBadge = document.createElement('div');
-                    countBadge.className = 'px-3 py-2 text-xs text-slate-400 border-b border-slate-700 flex items-center justify-between';
-                    countBadge.innerHTML = `<span><i class="fa-solid fa-filter mr-1.5"></i>Filtered Results</span><span class="bg-emerald-900/30 text-emerald-400 px-2 py-0.5 rounded-full font-semibold">${filtered.length}</span>`;
-                    missionList.appendChild(countBadge);
-                }            filtered.forEach(m => {
+            // Add result count for searches or filters
+            if (lowerFilter !== '' || category !== '') {
+                const countBadge = document.createElement('div');
+                countBadge.className = 'px-3 py-2 text-xs text-slate-400 border-b border-slate-700 flex items-center justify-between';
+                countBadge.innerHTML = `<span><i class="fa-solid fa-filter mr-1.5"></i>Filtered Results</span><span class="bg-emerald-900/30 text-emerald-400 px-2 py-0.5 rounded-full font-semibold">${filtered.length}</span>`;
+                missionList.appendChild(countBadge);
+            }
+            
+            filtered.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 hover:border-emerald-500 cursor-pointer transition-all duration-200 hover:scale-[1.02] group';
                 item.onclick = () => selectMission(m.name);
@@ -212,7 +229,6 @@
                 
                 missionList.appendChild(item);
             });
-            }, lowerFilter !== '' ? 100 : 0);
         }
 
         // --- TREE CONTROLS ---
@@ -580,12 +596,18 @@
         }
 
         // --- EVENT LISTENERS ---
+        const categoryFilter = document.getElementById('categoryFilter');
         let searchTimeout;
+        
         searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
-                renderList(e.target.value);
+                renderList(e.target.value, categoryFilter.value);
             }, 200);
+        });
+        
+        categoryFilter.addEventListener('change', (e) => {
+            renderList(searchInput.value, e.target.value);
         });
         
         // Keyboard shortcut: Ctrl+K to focus search
